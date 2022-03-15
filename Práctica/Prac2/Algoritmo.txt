@@ -1,0 +1,124 @@
+function sysCall_init()
+    -- do some initialization here
+    -- TODO: crear handle de motores de ruedas; sensor IR (tcrt5000); sensor de proximidad (sonar); sensores laterales (vl5310x); 
+    ir_sensor = sim.getObjectHandle('tcrt5000_sensor')
+    resolution=sim.getVisionSensorResolution(ir_sensor)
+    sonar = sim.getObjectHandle('sonar')
+    max_dist = 1
+    dist = getDistance(sonar,max_dist)
+
+   -- Parametros del sistema
+    colorLinea=0  
+    colorLinea= leerColorLinea()
+    R=0.03
+    b=0.0565   
+    vref=0.15   
+    min_distUS=0.2
+    max_distUS=0.5
+    dUS=max_distUS -- distancia del robot al objeto   
+    negro=0.1
+    blanco=0.9
+    gris=(blanco-negro)/2+negro
+    kLine=2
+    max_distLIDAR=1.2
+
+    -- Estas dos distancias corresponden a la distancia lateral con los dos sensores vl5310x del lado derecho, en la parte delantera y trasera (front & rear) de la pinza derecha.
+    dFR=max_distLIDAR -- distancia del robot al objeto por el lado derecho con el sensor delantero
+    dRR=max_distLIDAR -- distancia del robot al objeto por el lado derecho con el sensor trasero
+
+    kWall=4
+    e=0.24
+    a=0.03
+    state=0  -- 0 -> Line following, 1 -> Turn,  2-> Follow wall left
+end
+
+function sysCall_actuation()
+    -- Funci?n para actualiza la velocidad de las ruedas controlando los motores por velocidad
+
+    -- TODO: Determinal wL y wR en funci?n de la l?nea con una llamada a la funci?n segLinea
+    
+
+    if (state==0) then
+        -- TODO
+    elseif (state==1) then
+        -- TODO
+    elseif (state==2) then
+        -- TODO
+    elseif (state==3) then
+        -- TODO
+    end
+    
+    sim.setJointTargetVelocity(left_wheel,wI)
+    sim.setJointTargetVelocity(right_wheel,wD)
+end
+
+function sysCall_sensing()
+    -- Debe actualizar el valor de la variable "colorLinea"
+
+    -- TODO: actualizar el valor de "colorLinea" mediante la funci?n leerColorLinea
+
+    -- TODO: actualizar los valores de dUS, dFR, DRR mediante la funci?n getDistance
+    print(state)
+    if (state==0) then
+        if (math.abs(dUS-min_distUS)<2e-2) then
+            state=1
+        end
+    elseif (state==1) then
+		-- TODO
+    elseif (state==2) then
+		-- TODO
+    elseif (state==3) then
+		-- TODO
+    end
+end
+
+function sysCall_cleanup()
+    -- do some clean-up here
+end
+
+function followWall(dFR,dRR,dRef,v)
+	-- Funci?n del seguimiento lateral del obst?culo. Devuelve wI y WD en funci?n de los datos de los sensores laterales del lado derecho, y una distancia de referencia rRef, que ser? la distnacia minima que queremos que exista entre el robot y el obstaculo.
+
+    local phi,d,alpha,wI,wD
+
+    -- TODO: realizar el control del robot en base a las ecuaciones propuestas en la memoria.
+    
+    return wI,wD
+end
+
+function segLinea(value,ref_value,gain,vel)
+    -- TODO: La funci?n debe devolver las velocidades angulares de ambas ruedas (wI  ,wD). Revisar el control cinem?tico de la pr?ctica
+     local wL, wR
+     w = -ref_value(
+    return wI,wD
+end
+
+
+function getVelocity(d,vref,dmin,dmax)
+    if (d<dmin) then
+        return 0
+    else
+        return vref*d/dmax
+    end
+end
+
+function getDistance(sensor,max_dist)
+	-- Funci?n que devuelve una distancia en funci?n de un sensor de proximidad y una distancia m?xima 
+	-- TODO: leer el valor del sensor y si el la distancia devuelta est? en el rango de lectura, es decir, hay un objeto, se devuelve la misma; sino se devuelve la distancia m?xima.
+        local detected, distance
+        detected,distance = sim.readProximitySensor(sensor)
+        if(detected < 1) then
+            distance=max_dist
+        end
+    return distance
+end
+
+function leerColorLinea()
+    local val=0
+    value=sim.getVisionSensorImage(ir_sensor+sim.handleflag_greyscale)
+    for i=1,#value,1 do
+      val=val+value[i]
+    end
+    return val/#value
+end
+
